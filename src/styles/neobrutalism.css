@@ -25,14 +25,16 @@ body {
 }
 
 .neobrutalism-app {
-  padding: 20px;
-  min-width: 400px;
-  max-width: 500px;
+  padding: 15px;
+  min-width: 350px;
+  max-width: 450px;
+  position: relative;
+  overflow: hidden;
 }
 
 .app-header {
-  margin-bottom: 20px;
-  padding: 15px;
+  margin-bottom: 15px;
+  padding: 10px;
   background-color: var(--neo-yellow);
   border: var(--neo-border-width) solid var(--neo-black);
   box-shadow: var(--neo-shadow);
@@ -94,6 +96,11 @@ body {
   margin-bottom: 15px;
 }
 
+.neo-card.compact {
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
 .neo-input {
   padding: 10px;
   font-size: 14px;
@@ -137,6 +144,7 @@ body {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -152,6 +160,18 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+.spinner-small {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--neo-black);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -161,14 +181,14 @@ body {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 12px;
   font-weight: 900;
   text-transform: uppercase;
   border: var(--neo-border-width) solid var(--neo-black);
   box-shadow: 2px 2px 0px var(--neo-black);
-  font-size: 12px;
-  margin-bottom: 15px;
+  font-size: 11px;
+  margin-bottom: 10px;
 }
 
 .status-badge.inactive {
@@ -192,11 +212,57 @@ body {
   color: var(--neo-white);
 }
 
+.neo-ribbon {
+  position: absolute;
+  top: 20px;
+  right: -30px;
+  background-color: var(--neo-teal);
+  color: var(--neo-black);
+  padding: 5px 40px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  border: 2px solid var(--neo-black);
+  box-shadow: 2px 2px 0px var(--neo-black);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.neo-ribbon.inactive {
+  background-color: #CCCCCC;
+}
+
+.neo-ribbon.active {
+  background-color: var(--neo-teal);
+}
+
+.neo-ribbon.extracting {
+  background-color: var(--neo-yellow);
+}
+
+.neo-ribbon.complete {
+  background-color: #90EE90;
+}
+
+.neo-ribbon.error {
+  background-color: var(--neo-red);
+  color: var(--neo-white);
+}
+
 .extractor-controls {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 15px;
+}
+
+.extractor-controls.compact {
+  gap: 8px;
+  margin-bottom: 0;
 }
 
 .input-group {
@@ -205,10 +271,23 @@ body {
   gap: 6px;
 }
 
-.input-group label {
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.input-row label {
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.neo-input.compact {
+  padding: 6px;
+  font-size: 13px;
 }
 
 .button-group {
@@ -216,8 +295,23 @@ body {
   gap: 10px;
 }
 
-.button-group button {
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.button-row button {
   flex: 1;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .progress-text {
@@ -410,15 +504,15 @@ body {
   .chart-container {
     height: 250px;
   }
-  
+
   .peak-times-summary {
     gap: 8px;
   }
-  
+
   .peak-time-card {
     padding: 10px;
   }
-  
+
   .peak-value {
     font-size: 12px;
   }

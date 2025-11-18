@@ -7,10 +7,10 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && isXDomain(tab.url)) {
     console.log('[X-Extractor] X.com domain detected, activating extension');
-    
+
     chrome.action.setBadgeText({ text: 'ON', tabId });
     chrome.action.setBadgeBackgroundColor({ color: '#4ECDC4', tabId });
-    
+
     chrome.tabs.sendMessage(tabId, { action: 'ACTIVATE_EXTRACTOR' }).catch(() => {
       console.log('[X-Extractor] Content script not ready yet');
     });
@@ -32,14 +32,13 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[X-Extractor] Background received message:', message.action);
-  
-  if (message.action === 'EXTRACTION_PROGRESS' || 
-      message.action === 'EXTRACTION_COMPLETE' ||
-      message.action === 'EXTRACTION_ERROR') {
+
+  if (message.action === 'EXTRACTION_PROGRESS' ||
+    message.action === 'EXTRACTION_COMPLETE' ||
+    message.action === 'EXTRACTION_ERROR') {
     chrome.runtime.sendMessage(message).catch(() => {
       console.log('[X-Extractor] Popup not open');
     });
+    sendResponse({ success: true });
   }
-  
-  return true;
 });

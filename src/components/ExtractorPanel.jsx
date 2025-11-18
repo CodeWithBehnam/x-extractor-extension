@@ -19,10 +19,10 @@ function ExtractorPanel({ status, progress, onStart, onStop }) {
   const isExtracting = status === 'extracting';
 
   return (
-    <div className="neo-card">
-      <div className="extractor-controls">
-        <div className="input-group">
-          <label htmlFor="post-limit">Number of Posts (1-1000)</label>
+    <div className="neo-card compact">
+      <div className="extractor-controls compact">
+        <div className="input-row">
+          <label htmlFor="post-limit">POSTS (1-1000):</label>
           <input
             id="post-limit"
             type="number"
@@ -31,34 +31,33 @@ function ExtractorPanel({ status, progress, onStart, onStop }) {
             value={limit}
             onChange={handleLimitChange}
             disabled={isExtracting}
-            className="neo-input"
+            className="neo-input compact"
           />
         </div>
 
-        <div className="button-group">
-          {!isExtracting ? (
-            <button
-              onClick={handleStart}
-              className="neo-button primary"
-              disabled={status === 'inactive'}
-            >
-              Start Extraction
-            </button>
-          ) : (
-            <button
-              onClick={onStop}
-              className="neo-button danger"
-            >
-              Stop
-            </button>
-          )}
-        </div>
+        <div className="button-row">
+          <button
+            onClick={handleStart}
+            className={`neo-button primary ${isExtracting ? 'extracting' : ''}`}
+            disabled={status === 'inactive' || isExtracting}
+          >
+            {isExtracting ? (
+              <span className="btn-content">
+                {progress.current} / {progress.total} <div className="spinner-small"></div>
+              </span>
+            ) : (
+              "EXTRACT"
+            )}
+          </button>
 
-        {isExtracting && (
-          <div className="progress-text">
-            Progress: {progress.current} / {progress.total}
-          </div>
-        )}
+          <button
+            onClick={onStop}
+            className="neo-button danger"
+            disabled={!isExtracting}
+          >
+            STOP
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 {
   "name": "x-extractor-extension",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "description": "Chrome extension to extract post data from x.com with CSV export",
   "type": "module",
   "scripts": {
