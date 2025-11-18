@@ -7,7 +7,7 @@
 
 > A powerful Chrome extension to extract post data from X.com (formerly Twitter) with advanced analytics, CSV export, and anti-detection features.
 
-![X.com Data Extractor Banner](https://via.placeholder.com/1200x400/4ECDC4/1A1A1A?text=X.com+Data+Extractor)
+![X.com Data Extractor Banner](assets/screenshot-main.png)
 
 ## ✨ Features
 
@@ -48,10 +48,10 @@
 
 ## 🎥 Demo
 
-![Extraction Demo](https://via.placeholder.com/600x400/FFE66D/1A1A1A?text=Extraction+Demo)
+![Extraction Demo](assets/screenshot-main.png)
 *Extract posts with real-time progress tracking*
 
-![Analytics Dashboard](https://via.placeholder.com/600x400/4ECDC4/1A1A1A?text=Analytics+Dashboard)
+![Analytics Dashboard](assets/screenshot-analytics.png)
 *Visualize your posting patterns with interactive charts*
 
 ## 📋 Table of Contents
