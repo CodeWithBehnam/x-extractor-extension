@@ -11,7 +11,7 @@ export function extractPostText(postEl) {
   try {
     const textEl = postEl.querySelector('[data-testid="tweetText"]');
     if (textEl) {
-      return textEl.innerText.trim().replace(/\s+/g, ' ');
+      return (textEl.innerText || textEl.textContent).trim().replace(/\s+/g, ' ');
     }
     return '';
   } catch (error) {
@@ -30,7 +30,7 @@ export function extractAuthorHandle(postEl) {
         return `@${handle}`;
       }
     }
-    
+
     const authorEl = postEl.querySelector('[data-testid="User-Name"]');
     if (authorEl) {
       const handleEl = authorEl.querySelector('a');
@@ -42,7 +42,7 @@ export function extractAuthorHandle(postEl) {
         }
       }
     }
-    
+
     return 'unknown';
   } catch (error) {
     logger.error('Error extracting author:', error);
@@ -53,27 +53,27 @@ export function extractAuthorHandle(postEl) {
 export function extractTimestamp(postEl) {
   try {
     const timeEl = postEl.querySelector('time');
-    if (timeEl?.datetime) {
-      return timeEl.datetime;
+    if (timeEl?.getAttribute('datetime')) {
+      return timeEl.getAttribute('datetime');
     }
-    
+
     if (timeEl?.textContent) {
       const relativeTime = timeEl.textContent;
       const now = new Date();
-      
+
       const hourMatch = relativeTime.match(/(\d+)h/);
       if (hourMatch) {
         now.setHours(now.getHours() - parseInt(hourMatch[1]));
         return now.toISOString();
       }
-      
+
       const minMatch = relativeTime.match(/(\d+)m/);
       if (minMatch) {
         now.setMinutes(now.getMinutes() - parseInt(minMatch[1]));
         return now.toISOString();
       }
     }
-    
+
     return new Date().toISOString();
   } catch (error) {
     logger.error('Error extracting timestamp:', error);
@@ -84,18 +84,18 @@ export function extractTimestamp(postEl) {
 export function extractMediaUrls(postEl) {
   try {
     const mediaUrls = [];
-    
+
     const imgs = postEl.querySelectorAll('img[src*="pbs.twimg.com"]');
     imgs.forEach(img => {
       let src = img.src;
       if (src && !src.includes('profile_images') && !src.includes('emoji')) {
-        src = src.replace(/&name=\w+/, '&name=large');
+        src = src.replace(/name=\w+/, 'name=large');
         if (!mediaUrls.includes(src)) {
           mediaUrls.push(src);
         }
       }
     });
-    
+
     const videos = postEl.querySelectorAll('video');
     videos.forEach(video => {
       const src = video.src || video.dataset.src;
@@ -103,7 +103,7 @@ export function extractMediaUrls(postEl) {
         mediaUrls.push(src);
       }
     });
-    
+
     return mediaUrls;
   } catch (error) {
     logger.error('Error extracting media:', error);
@@ -115,28 +115,28 @@ export function extractEngagement(postEl) {
   try {
     function parseMetric(text) {
       if (!text) return 0;
-      
+
       const cleanText = text.replace(/,/g, '');
       const match = cleanText.match(/([\d.]+)([KMB]?)/i);
-      
+
       if (match) {
         const value = parseFloat(match[1]);
         const multiplier = match[2].toUpperCase();
-        
+
         if (multiplier === 'K') return Math.floor(value * 1000);
         if (multiplier === 'M') return Math.floor(value * 1000000);
         if (multiplier === 'B') return Math.floor(value * 1000000000);
-        
+
         return Math.floor(value);
       }
-      
+
       return 0;
     }
-    
+
     function getMetric(selector) {
       const el = postEl.querySelector(selector);
       if (!el) return 0;
-      
+
       const ariaLabel = el.getAttribute('aria-label');
       if (ariaLabel) {
         const match = ariaLabel.match(/(\d+[\d,KMB]*)/i);
@@ -144,11 +144,11 @@ export function extractEngagement(postEl) {
           return parseMetric(match[1]);
         }
       }
-      
+
       const text = el.textContent || '';
       return parseMetric(text);
     }
-    
+
     return {
       likes: getMetric('[data-testid="like"]'),
       retweets: getMetric('[data-testid="retweet"]'),
@@ -170,12 +170,12 @@ export function extractPost(postEl, retryCount = 0) {
       mediaUrls: extractMediaUrls(postEl),
       engagement: extractEngagement(postEl)
     };
-    
+
     if (!post.text && !post.author && retryCount < 2) {
       logger.warn(`Post extraction incomplete, retry ${retryCount + 1}`);
       return null;
     }
-    
+
     return post;
   } catch (error) {
     logger.error('Error extracting post:', error);

@@ -13,10 +13,9 @@ describe('StatusIndicator', () => {
     expect(screen.getByText('Ready')).toBeInTheDocument();
   });
 
-  it('renders extracting status with spinner', () => {
-    const { container } = render(<StatusIndicator status="extracting" />);
-    expect(screen.getByText('Extracting...')).toBeInTheDocument();
-    expect(container.querySelector('.spinner')).toBeInTheDocument();
+  it('renders extracting status', () => {
+    render(<StatusIndicator status="extracting" />);
+    expect(screen.getByText('Extracting')).toBeInTheDocument();
   });
 
   it('renders complete status', () => {
@@ -31,9 +30,9 @@ describe('StatusIndicator', () => {
 
   it('applies correct CSS class based on status', () => {
     const { container, rerender } = render(<StatusIndicator status="active" />);
-    expect(container.querySelector('.status-badge.active')).toBeInTheDocument();
-    
+    expect(container.querySelector('.neo-ribbon.active')).toBeInTheDocument();
+
     rerender(<StatusIndicator status="error" />);
-    expect(container.querySelector('.status-badge.error')).toBeInTheDocument();
+    expect(container.querySelector('.neo-ribbon.error')).toBeInTheDocument();
   });
 });

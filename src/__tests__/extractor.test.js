@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { 
-  extractPostText, 
-  extractAuthorHandle, 
+import {
+  extractPostText,
+  extractAuthorHandle,
   extractTimestamp,
   extractMediaUrls,
   extractEngagement,
-  getPostElements 
+  getPostElements
 } from '../utils/extractor';
 
 describe('extractor utilities', () => {
@@ -80,7 +80,7 @@ describe('extractor utilities', () => {
     it('returns current timestamp if no time element', () => {
       const postEl = document.createElement('article');
       const result = extractTimestamp(postEl);
-      
+
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
     });
   });
@@ -98,11 +98,11 @@ describe('extractor utilities', () => {
 
     it('filters out profile images and emojis', () => {
       const postEl = document.createElement('article');
-      
+
       const profileImg = document.createElement('img');
       profileImg.src = 'https://pbs.twimg.com/profile_images/test.jpg';
       postEl.appendChild(profileImg);
-      
+
       const emoji = document.createElement('img');
       emoji.src = 'https://pbs.twimg.com/emoji/test.png';
       postEl.appendChild(emoji);
@@ -125,12 +125,12 @@ describe('extractor utilities', () => {
   describe('extractEngagement', () => {
     it('extracts engagement metrics', () => {
       const postEl = document.createElement('article');
-      
+
       const likeBtn = document.createElement('button');
       likeBtn.setAttribute('data-testid', 'like');
       likeBtn.setAttribute('aria-label', '42 Likes');
       postEl.appendChild(likeBtn);
-      
+
       const retweetBtn = document.createElement('button');
       retweetBtn.setAttribute('data-testid', 'retweet');
       retweetBtn.setAttribute('aria-label', '10 Retweets');
@@ -144,7 +144,7 @@ describe('extractor utilities', () => {
     it('returns zeros if no engagement found', () => {
       const postEl = document.createElement('article');
       const engagement = extractEngagement(postEl);
-      
+
       expect(engagement).toEqual({
         likes: 0,
         retweets: 0,
@@ -158,10 +158,12 @@ describe('extractor utilities', () => {
     it('returns visible tweet articles', () => {
       const article1 = document.createElement('article');
       article1.setAttribute('data-testid', 'tweet');
+      Object.defineProperty(article1, 'offsetParent', { value: document.body });
       document.body.appendChild(article1);
 
       const article2 = document.createElement('article');
       article2.setAttribute('data-testid', 'tweet');
+      Object.defineProperty(article2, 'offsetParent', { value: document.body });
       document.body.appendChild(article2);
 
       const elements = getPostElements();

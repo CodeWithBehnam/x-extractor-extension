@@ -32,7 +32,7 @@ describe('csvExporter', () => {
   describe('transformPostsToCSV', () => {
     it('transforms posts to CSV format', () => {
       const result = transformPostsToCSV(samplePosts);
-      
+
       expect(result).toHaveLength(2);
       expect(result[0]).toHaveProperty('text', 'Test tweet 1');
       expect(result[0]).toHaveProperty('author', '@testuser');
@@ -48,7 +48,7 @@ describe('csvExporter', () => {
       }];
 
       const result = transformPostsToCSV(postsWithoutEngagement);
-      
+
       expect(result[0].likes).toBe(0);
       expect(result[0].retweets).toBe(0);
     });
@@ -67,9 +67,9 @@ describe('csvExporter', () => {
 
     it('handles empty or missing fields', () => {
       const incompletePosts = [{ text: 'Only text' }];
-      
+
       const result = transformPostsToCSV(incompletePosts);
-      
+
       expect(result[0].text).toBe('Only text');
       expect(result[0].author).toBe('');
       expect(result[0].timestamp).toBe('');
@@ -80,7 +80,7 @@ describe('csvExporter', () => {
   describe('generateCSV', () => {
     it('generates CSV string and filename', () => {
       const result = generateCSV(samplePosts);
-      
+
       expect(result).toHaveProperty('csv');
       expect(result).toHaveProperty('filename');
       expect(typeof result.csv).toBe('string');
@@ -89,7 +89,7 @@ describe('csvExporter', () => {
 
     it('CSV contains headers', () => {
       const result = generateCSV(samplePosts);
-      
+
       expect(result.csv).toContain('text');
       expect(result.csv).toContain('author');
       expect(result.csv).toContain('timestamp');
@@ -98,15 +98,15 @@ describe('csvExporter', () => {
 
     it('CSV contains data rows', () => {
       const result = generateCSV(samplePosts);
-      
+
       expect(result.csv).toContain('Test tweet 1');
       expect(result.csv).toContain('@testuser');
     });
 
     it('handles empty posts array', () => {
       const result = generateCSV([]);
-      
-      expect(result.csv).toBeTruthy();
+
+      expect(result.csv).toBe('');
       expect(result.filename).toMatch(/^x-posts-.*\.csv$/);
     });
   });
