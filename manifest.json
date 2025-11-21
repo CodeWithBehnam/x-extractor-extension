@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "X.com Data Extractor",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "Extract post data from x.com with CSV export functionality",
   "icons": {
     "16": "icons/icon-16.png",
