@@ -97,16 +97,18 @@ function getRandomDelay(min, max) {
 }
 
 function getRandomScrollAmount() {
-  const baseAmount = Math.floor(Math.random() * 500) + 800; // Increased scroll amount
-  const jitter = Math.floor(Math.random() * 100) - 50;
-  return baseAmount + jitter;
+  // Scroll between 40% and 70% of viewport height
+  const viewportHeight = window.innerHeight;
+  const minScroll = Math.floor(viewportHeight * 0.4);
+  const maxScroll = Math.floor(viewportHeight * 0.7);
+  return Math.floor(Math.random() * (maxScroll - minScroll + 1)) + minScroll;
 }
 
 function easeInOutQuad(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
-async function smoothScroll(targetY, duration = 500) {
+async function smoothScroll(targetY, duration) {
   const startY = window.scrollY;
   const distance = targetY - startY;
   const startTime = performance.now();
@@ -131,30 +133,49 @@ async function smoothScroll(targetY, duration = 500) {
 }
 
 async function humanLikeScroll() {
-  const viewportHeight = window.innerHeight;
   const scrollAmount = getRandomScrollAmount();
-  const targetY = window.scrollY + scrollAmount; // Removed limit to scroll faster
+  const targetY = window.scrollY + scrollAmount;
 
-  const scrollDuration = getRandomDelay(20, 50); // Much faster scroll
+  // Slower, more natural scroll speed (800ms - 1500ms)
+  const scrollDuration = getRandomDelay(800, 1500);
+
   await smoothScroll(targetY, scrollDuration);
 
-  const pauseDelay = getRandomDelay(50, 100); // Minimal pause
+  // Variable pause after scrolling to simulate scanning content
+  const pauseDelay = getRandomDelay(500, 1200);
   await delay(pauseDelay);
 }
 
+async function simulateUserActivity() {
+  // 10% chance to do a small "correction" scroll up
+  if (Math.random() < 0.1) {
+    const currentY = window.scrollY;
+    const upAmount = getRandomDelay(50, 150);
+    await smoothScroll(Math.max(0, currentY - upAmount), 400);
+    await delay(getRandomDelay(300, 800));
+  }
+}
+
 async function extractPosts(limit) {
-  const maxLimit = Math.min(limit, 1000);
+  const maxLimit = Math.min(limit, 2000); // Increased hard limit slightly
   const posts = [];
   const seenTexts = new Set();
   let attempts = 0;
-  const maxAttempts = maxLimit * 3;
+  const maxAttempts = maxLimit * 5; // More attempts allowed for stealth mode
   const startTime = Date.now();
-  const timeout = 30 * 60 * 1000;
+  // Longer timeout for large extractions (up to 2 hours for 1000+ posts)
+  const timeout = maxLimit > 500 ? 2 * 60 * 60 * 1000 : 30 * 60 * 1000;
+
   let consecutiveErrors = 0;
   let postsSinceLastPause = 0;
-  const pauseThreshold = 200;
+  let postsSinceLastLongPause = 0;
 
-  logger.info(`Extracting up to ${maxLimit} posts`);
+  // Stealth settings
+  const isStealthMode = maxLimit > 50;
+  const shortPauseThreshold = getRandomDelay(15, 25); // Pause every 15-25 posts
+  const longPauseThreshold = getRandomDelay(80, 120); // Long break every 80-120 posts
+
+  logger.info(`Starting extraction. Target: ${maxLimit}. Stealth Mode: ${isStealthMode ? 'ON' : 'OFF'}`);
 
   while (posts.length < maxLimit && attempts < maxAttempts && !state.shouldStop) {
     if (Date.now() - startTime > timeout) {
@@ -167,7 +188,7 @@ async function extractPosts(limit) {
 
       if (postElements.length === 0) {
         logger.warn('No posts found on page');
-        await delay(100);
+        await delay(2000); // Wait longer
         attempts++;
         continue;
       }
@@ -179,7 +200,10 @@ async function extractPosts(limit) {
           break;
         }
 
-        await delay(5);
+        // Simulate reading/processing time
+        if (isStealthMode) {
+          await delay(getRandomDelay(50, 150));
+        }
 
         const post = extractPost(postEl);
 
@@ -191,10 +215,10 @@ async function extractPosts(limit) {
             posts.push(post);
             newPostsFound = true;
             postsSinceLastPause++;
+            postsSinceLastLongPause++;
             consecutiveErrors = 0;
 
-            await delay(5);
-
+            // Send progress update
             chrome.runtime.sendMessage({
               action: 'EXTRACTION_PROGRESS',
               current: posts.length,
@@ -204,11 +228,23 @@ async function extractPosts(limit) {
 
             logger.debug(`Extracted post ${posts.length}/${maxLimit}`);
 
-            if (postsSinceLastPause >= pauseThreshold) {
-              const longPause = getRandomDelay(500, 1000);
-              logger.info(`Taking pause (${longPause}ms) after ${postsSinceLastPause} posts`);
-              await delay(longPause);
+            // --- STEALTH LOGIC ---
+
+            // 1. Random "Reading" Pause (Short)
+            if (postsSinceLastPause >= shortPauseThreshold) {
+              const pauseTime = getRandomDelay(2000, 5000);
+              logger.info(`Micro-pause: Reading for ${pauseTime}ms`);
+              await delay(pauseTime);
               postsSinceLastPause = 0;
+              await simulateUserActivity(); // Maybe scroll up a bit
+            }
+
+            // 2. "Coffee Break" Pause (Long) - Only for large extractions
+            if (isStealthMode && postsSinceLastLongPause >= longPauseThreshold) {
+              const longPauseTime = getRandomDelay(10000, 25000);
+              logger.info(`Long pause: Taking a break for ${longPauseTime / 1000}s`);
+              await delay(longPauseTime);
+              postsSinceLastLongPause = 0;
             }
           }
         }
@@ -216,6 +252,11 @@ async function extractPosts(limit) {
 
       if (!newPostsFound) {
         logger.debug('No new posts found, scrolling...');
+        await humanLikeScroll();
+      } else {
+        // Even if we found posts, we need to scroll eventually to find more
+        // But maybe not immediately if we just processed a batch. 
+        // Let's scroll if we are at the bottom of the current view or just randomly
         await humanLikeScroll();
       }
 
@@ -226,10 +267,11 @@ async function extractPosts(limit) {
       logger.error(`Extraction error (${consecutiveErrors} consecutive):`, error);
 
       if (error.message && (error.message.includes('429') || error.message.includes('403'))) {
-        const backoffDelay = Math.min(1000 * Math.pow(2, consecutiveErrors), 60000);
-        logger.warn(`Rate limit detected, backing off for ${backoffDelay}ms`);
+        // Serious rate limit
+        const backoffDelay = Math.min(30000 * Math.pow(1.5, consecutiveErrors), 300000); // Up to 5 mins
+        logger.warn(`Rate limit detected! Backing off for ${backoffDelay / 1000}s`);
         await delay(backoffDelay);
-      } else if (consecutiveErrors >= 5) {
+      } else if (consecutiveErrors >= 10) {
         logger.error('Too many consecutive errors, stopping extraction');
         break;
       } else {
